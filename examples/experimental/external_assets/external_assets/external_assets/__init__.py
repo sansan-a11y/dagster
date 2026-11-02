@@ -8,7 +8,7 @@ from dagster._core.definitions.assets.definition.asset_spec import AssetSpec
 def build_asset_specs_from_external_definitions():
     specs = []
     with open(os.path.join(os.path.dirname(__file__), "asset_defs.yaml"), encoding="utf-8") as f:
-        data = yaml.load(f, Loader=yaml.SafeLoader)
+        data = yaml.safe_load(f)
         for asset in data["assets"]:
             deps = [AssetKey(dep.split("/")) for dep in asset.get("dependsOn", [])]
             specs.append(

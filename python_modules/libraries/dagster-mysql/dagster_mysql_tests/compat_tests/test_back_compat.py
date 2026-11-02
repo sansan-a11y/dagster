@@ -52,11 +52,21 @@ def _reconstruct_from_file(conn_string, path, _username="root", _password="test"
             conn.execute(db.text("create schema test;"))
     env = os.environ.copy()
     env["MYSQL_PWD"] = "test"
-    subprocess.check_call(
-        f"mysql -uroot --skip-ssl -h{hostname} -P{port} -ptest test < {path}",
-        shell=True,
-        env=env,
-    )
+    with open(path, "rb") as sql_file:
+        subprocess.check_call(
+            [
+                "mysql",
+                "-uroot",
+                "--skip-ssl",
+                f"-h{hostname}",
+                f"-P{port}",
+                "-ptest",
+                "test",
+            ],
+            stdin=sql_file,
+            shell=False,
+            env=env,
+        )
     return hostname, port
 
 

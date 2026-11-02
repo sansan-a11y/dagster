@@ -652,13 +652,13 @@ def run_ty(env: str, paths: Sequence[str] | None) -> RunResult:
         # ty uses the include paths from the temp config.
         check_paths = [str((invoking_cwd / p).resolve()) for p in (paths or [])]
 
-        shell_cmd = " \\\n".join([" ".join(base_ty_cmd_parts), *[f"    {p}" for p in check_paths]])
+        command = [*base_ty_cmd_parts, *check_paths]
         print(f"Running ty for environment `{env}`...")
-        print(f"  {shell_cmd}")
+        print(f"  {' '.join(command)}")
         result = subprocess.run(
-            shell_cmd,
+            command,
             capture_output=True,
-            shell=True,
+            shell=False,
             text=True,
             check=False,
             cwd=project_root,

@@ -5,11 +5,6 @@ from typing import Any, NamedTuple
 import yaml
 from dagster._core.execution.context.compute import AssetExecutionContext
 
-try:
-    from yaml import CLoader as Loader
-except ImportError:
-    from yaml import Loader
-
 from dagster import AssetKey, AssetsDefinition, asset, file_relative_path, multi_asset
 from dagster._core.definitions.assets.definition.asset_spec import AssetSpec
 from dagster._core.pipes.subprocess import PipesSubprocessClient
@@ -18,7 +13,7 @@ from dagster._core.pipes.subprocess import PipesSubprocessClient
 def load_yaml(relative_path: str) -> dict[str, Any]:
     path = os.path.join(os.path.dirname(__file__), relative_path)
     with open(path, encoding="utf8") as ff:
-        return yaml.load(ff, Loader=Loader)
+        return yaml.safe_load(ff)
 
 
 def get_ticker_data(ticker: str) -> str:

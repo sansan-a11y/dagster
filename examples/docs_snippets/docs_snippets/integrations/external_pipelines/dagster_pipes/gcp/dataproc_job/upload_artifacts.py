@@ -28,15 +28,34 @@ def main():
 
     with tempfile.TemporaryDirectory() as temp_dir:
         os.chdir(temp_dir)
+        env = {**os.environ, "DOCKER_BUILDKIT": "1"}
         subprocess.run(
-            " && \\\n".join(
-                [
-                    f"DOCKER_BUILDKIT=1 docker build --output type=local,dest=./output -f {SCRIPT_DIR}/dev.Dockerfile {DAGSTER_DIR}",
-                    f"gsutil cp ./output/venv.pex {os.path.join(args.gcs_dir, 'venv.pex')}",
-                    f"gsutil cp {SCRIPT_DIR / 'script.py'} {os.path.join(args.gcs_dir, 'script.py')}",
-                ]
-            ),
-            shell=True,
+            [
+                "docker",
+                "build",
+                "--output",
+                "type=local,dest=./output",
+                "-f",
+                str(SCRIPT_DIR / "dev.Dockerfile"),
+                str(DAGSTER_DIR),
+            ],
+            env=env,
+            shell=False,
+            check=True,
+        )
+        subprocess.run(
+            ["gsutil", "cp", "./output/venv.pex", os.path.join(args.gcs_dir, "venv.pex")],
+            shell=False,
+            check=True,
+        )
+        subprocess.run(
+            [
+                "gsutil",
+                "cp",
+                str(SCRIPT_DIR / "script.py"),
+                os.path.join(args.gcs_dir, "script.py"),
+            ],
+            shell=False,
             check=True,
         )
 

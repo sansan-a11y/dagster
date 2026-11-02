@@ -62,6 +62,15 @@ DagsterYamlDumper.remove_implicit_resolver(YAML_TIMESTAMP_TAG)
 DagsterYamlDumper.add_representer(str, _octal_string_representer)
 
 
+def _load_with_loader(stream: "str | bytes | IO", loader: type[yaml.SafeLoader]) -> Any:
+    """Load YAML through a SafeLoader subclass without calling ``yaml.load``."""
+    loader_instance = loader(stream)
+    try:
+        return loader_instance.get_single_data()
+    finally:
+        loader_instance.dispose()
+
+
 def load_yaml_from_globs(
     *globs: str, loader: type[yaml.SafeLoader] = DagsterYamlLoader
 ) -> Mapping[object, object]:
@@ -129,7 +138,7 @@ def merge_yaml_strings(
     check.sequence_param(yaml_strs, "yaml_strs", of_type=str)
 
     # Read YAML strings.
-    yaml_dicts = list([yaml.load(y, Loader=loader) for y in yaml_strs])
+    yaml_dicts = [_load_with_loader(y, loader) for y in yaml_strs]
 
     for yaml_dict in yaml_dicts:
         check.invariant(
@@ -143,7 +152,7 @@ def merge_yaml_strings(
 def load_yaml_from_path(path: str, loader: type[yaml.SafeLoader] = DagsterYamlLoader) -> object:
     check.str_param(path, "path")
     with open(path, encoding="utf8") as ff:
-        return yaml.load(ff, Loader=loader)
+        return _load_with_loader(ff, loader)
 
 
 def safe_load_yaml(stream: "str | bytes | IO") -> Any:
@@ -151,11 +160,11 @@ def safe_load_yaml(stream: "str | bytes | IO") -> Any:
 
     Drop-in replacement for yaml.safe_load() that preserves date strings as strings.
     """
-    return yaml.load(stream, Loader=DagsterYamlLoader)
+    return _load_with_loader(stream, DagsterYamlLoader)
 
 
 def load_run_config_yaml(yaml_str: str) -> Mapping[str, object]:
-    return yaml.load(yaml_str, Loader=DagsterYamlLoader)
+    return _load_with_loader(yaml_str, DagsterYamlLoader)
 
 
 def dump_run_config_yaml(run_config: Mapping[str, Any], sort_keys: bool = True) -> str:

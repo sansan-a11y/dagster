@@ -77,10 +77,8 @@ def _run_command(
         else:
             actual_output = (
                 subprocess.check_output(
-                    f'{cmd.strip()} && echo "PWD=$(pwd);"',
-                    shell=True,
-                    # Default in CI is dash
-                    executable="/bin/bash",
+                    ["/bin/bash", "-c", f'{cmd.strip()} && echo "PWD=$(pwd);"'],
+                    shell=False,
                     stderr=subprocess.STDOUT,
                     input=input_str.encode("utf-8") if input_str else None,
                 )

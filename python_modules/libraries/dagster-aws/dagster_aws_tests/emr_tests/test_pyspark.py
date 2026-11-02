@@ -175,20 +175,20 @@ def sync_code():
         "rsync",
         "-av",
         "-progress",
-        "--exclude='js_modules/'",
-        "--exclude='.git/'",
-        "--exclude='docs/'",
+        "--exclude=js_modules/",
+        "--exclude=.git/",
+        "--exclude=docs/",
         "-e",
-        '"ssh -i {aws_emr_pem_file}"'.format(aws_emr_pem_file=os.environ["AWS_EMR_PEM_FILE"]),
+        "ssh -i {aws_emr_pem_file}".format(aws_emr_pem_file=os.environ["AWS_EMR_PEM_FILE"]),
         os.environ["DAGSTER_DIR"],
         os.environ["AWS_EMR_NODE_ADDRESS"] + ":~/",
     ]
     if (
         subprocess.call(
-            " ".join(sync_code_command),
+            sync_code_command,
             stdout=sys.stdout,
             stderr=sys.stderr,
-            shell=True,
+            shell=False,
         )
         != 0
     ):
@@ -212,14 +212,14 @@ def sync_code():
         "-i",
         os.environ["AWS_EMR_PEM_FILE"],
         os.environ["AWS_EMR_NODE_ADDRESS"],
-        "'" + " ".join(remote_install_dagster_packages_command) + "'",
+        " ".join(remote_install_dagster_packages_command),
     ]
     if (
         subprocess.call(
-            " ".join(install_dagster_packages_command),
+            install_dagster_packages_command,
             stdout=sys.stdout,
             stderr=sys.stderr,
-            shell=True,
+            shell=False,
         )
         != 0
     ):

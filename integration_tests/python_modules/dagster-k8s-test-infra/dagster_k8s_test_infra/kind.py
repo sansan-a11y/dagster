@@ -357,15 +357,21 @@ def kind_sync_dockerconfig():
         node_name = node.metadata.name
 
         # copy the config to where kubelet will look
-        cmd = os.path.expandvars(
-            f"{docker_exe} cp $HOME/.docker/config.json {node_name}:/var/lib/kubelet/config.json"
-        )
+        cmd = [
+            docker_exe,
+            "cp",
+            os.path.expandvars("$HOME/.docker/config.json"),
+            f"{node_name}:/var/lib/kubelet/config.json",
+        ]
         print(f"Running cmd: {cmd}")
-        check_output(cmd, shell=True)
+        check_output(cmd, shell=False)
 
         # restart kubelet to pick up the config
         print("Restarting node kubelets...")
-        check_output(f"docker exec {node_name} systemctl restart kubelet.service", shell=True)
+        check_output(
+            ["docker", "exec", node_name, "systemctl", "restart", "kubelet.service"],
+            shell=False,
+        )
 
 
 @contextmanager

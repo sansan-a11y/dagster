@@ -14,6 +14,7 @@ import os
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 
 from dagster._utils import file_relative_path, safe_tempfile_path
 
@@ -104,7 +105,14 @@ def protoc(generated_dir: str):
     # ruff may not be available in a test environment.
     if shutil.which("ruff"):
         subprocess.check_output(
-            f"ruff format --line-length 100 {os.path.join(generated_dir, '*')}", shell=True
+            [
+                "ruff",
+                "format",
+                "--line-length",
+                "100",
+                *[str(path) for path in Path(generated_dir).glob("*")],
+            ],
+            shell=False,
         )
 
 

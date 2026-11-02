@@ -45,12 +45,21 @@ def get_wiki_data(title, first_paragraph_only):
 def get_github_docs(repo_owner, repo_name):
     with tempfile.TemporaryDirectory() as d:
         subprocess.check_call(
-            f"git clone --depth 1 https://github.com/{repo_owner}/{repo_name}.git .",
+            [
+                "git",
+                "clone",
+                "--depth",
+                "1",
+                f"https://github.com/{repo_owner}/{repo_name}.git",
+                ".",
+            ],
             cwd=d,
-            shell=True,
+            shell=False,
         )
         git_sha = (
-            subprocess.check_output("git rev-parse HEAD", shell=True, cwd=d).decode("utf-8").strip()
+            subprocess.check_output(["git", "rev-parse", "HEAD"], shell=False, cwd=d)
+            .decode("utf-8")
+            .strip()
         )
         repo_path = pathlib.Path(d)
         markdown_files = list(repo_path.glob("*/*.md")) + list(repo_path.glob("*/*.mdx"))

@@ -45,36 +45,33 @@ def pipes_spark_asset(context: dg.AssetExecutionContext):
         message_reader=message_reader,
         context_injector=context_injector,
     ) as session:
-        dagster_pipes_args = " ".join(
+        dagster_pipes_args = [
             # prepare Pipes bootstrap CLI arguments
-            [
-                f"{key} {value}"
-                for key, value in session.get_bootstrap_cli_arguments().items()
-            ]
-        )
+            token
+            for key, value in session.get_bootstrap_cli_arguments().items()
+            for token in (key, str(value))
+        ]
 
-        cmd = " ".join(
-            [
-                "spark-submit",
-                # change --master and --deploy-mode according to specific Spark setup
-                "--master",
-                "local[*]",
-                "--conf",
-                "spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem",
-                # custom S3 endpoint for MinIO
-                "--conf",
-                "spark.hadoop.fs.s3a.endpoint=http://minio:9000",
-                "--conf",
-                "spark.hadoop.fs.s3a.path.style.access=true",
-                f"s3a://{bucket}/{s3_script_path}",
-                dagster_pipes_args,
-            ]
-        )
+        cmd = [
+            "spark-submit",
+            # change --master and --deploy-mode according to specific Spark setup
+            "--master",
+            "local[*]",
+            "--conf",
+            "spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem",
+            # custom S3 endpoint for MinIO
+            "--conf",
+            "spark.hadoop.fs.s3a.endpoint=http://minio:9000",
+            "--conf",
+            "spark.hadoop.fs.s3a.path.style.access=true",
+            f"s3a://{bucket}/{s3_script_path}",
+            *dagster_pipes_args,
+        ]
 
         subprocess.run(
             # we do not forward stdio on purpose to demonstrate how Pipes collect logs from the driver
             cmd,
-            shell=True,
+            shell=False,
             check=True,
         )
 

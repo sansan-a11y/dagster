@@ -7,11 +7,6 @@ from dagster import AssetsDefinition
 from dagster._core.execution.context.compute import AssetExecutionContext
 from dagster._utils import file_relative_path
 
-try:
-    from yaml import CLoader as Loader
-except ImportError:
-    from yaml import Loader
-
 from dagster import AssetKey, asset
 from dagster._core.pipes.subprocess import PipesSubprocessClient
 
@@ -19,7 +14,7 @@ from dagster._core.pipes.subprocess import PipesSubprocessClient
 def load_yaml(relative_path) -> dict[str, Any]:
     path = os.path.join(os.path.dirname(__file__), relative_path)
     with open(path, encoding="utf8") as ff:
-        return yaml.load(ff, Loader=Loader)
+        return yaml.safe_load(ff)
 
 
 def from_asset_entries(asset_entries: dict[str, Any]) -> list[AssetsDefinition]:

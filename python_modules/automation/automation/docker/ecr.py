@@ -37,13 +37,18 @@ def ensure_ecr_login(aws_region: str = DEFAULT_AWS_ECR_REGION):
 
     aws_account_id = get_aws_account_id()
     registry = aws_ecr_repository(aws_account_id, aws_region)
-    cmd = (
-        f"aws ecr get-login-password --region {aws_region} "
-        f"| docker login --username AWS --password-stdin {registry}"
+    password = subprocess.check_output(
+        ["aws", "ecr", "get-login-password", "--region", aws_region],
+        shell=False,
+    )
+    login_result = subprocess.run(
+        ["docker", "login", "--username", "AWS", "--password-stdin", registry],
+        input=password,
+        shell=False,
     )
 
     check.invariant(
-        subprocess.call(cmd, shell=True) == 0,
+        login_result.returncode == 0,
         "ECR login must succeed",
     )
 

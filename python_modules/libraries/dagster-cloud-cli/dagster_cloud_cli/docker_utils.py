@@ -12,7 +12,7 @@ from dagster_cloud_cli.utils import DEFAULT_PYTHON_VERSION
 
 
 def verify_docker() -> None:
-    if subprocess.call("docker -v", shell=True) != 0:
+    if subprocess.call(["docker", "-v"], shell=False) != 0:
         raise ui.error("Docker must be installed locally to deploy to Dagster Cloud Serverless")
 
 
